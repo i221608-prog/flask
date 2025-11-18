@@ -15,6 +15,9 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                branch 'main'      // Deploy only when branch is 'main'
+            }
             steps {
                 echo 'Deploying....'
             }
@@ -29,7 +32,7 @@ pipeline {
             echo '❌ Pipeline failed'
         }
         always {
-            echo 'ℹ️  Post section executed (always)'
+            echo 'ℹ️ Post section executed (always)'
         }
     }
 }

@@ -10,8 +10,16 @@ pipeline {
 
         stage('Check Python') {
             steps {
+                sh 'python3 --version'
+            }
+        }
+
+        stage('Setup Virtual Environment') {
+            steps {
                 sh '''
-                python3 --version
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
                 '''
             }
         }
@@ -19,7 +27,8 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                pip3 install -r requirements.txt || true
+                    . venv/bin/activate
+                    pip install -r requirements.txt
                 '''
             }
         }
@@ -27,8 +36,9 @@ pipeline {
         stage('Test App') {
             steps {
                 sh '''
-                python3 -m py_compile app.py
-                echo "Flask app syntax OK"
+                    . venv/bin/activate
+                    python -m py_compile app.py
+                    echo "Flask app syntax OK"
                 '''
             }
         }

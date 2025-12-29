@@ -1,59 +1,36 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven_3'
-    }
-
-    parameters {
-        booleanParam(
-            name: 'RUN_TESTS',
-            defaultValue: true,
-            description: 'Run the Test stage?'
-        )
-    }
-
-    environment {
-        APP_NAME   = 'lab11_ssd'
-        DEPLOY_ENV = 'dev'
-    }
-
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                echo "Building ${env.APP_NAME}"
-                bat 'mvn -version'
+                checkout scm
             }
         }
 
-        stage('Test') {
-            when {
-                expression { params.RUN_TESTS }   // only run if checkbox is true
-            }
+        stage('Check Python') {
             steps {
-                echo "Running tests for ${env.APP_NAME}"
+                sh '''
+                python3 --version
+                '''
             }
         }
 
-        stage('Deploy') {
-            when {
-                branch 'main'                     // Deploy only on main branch
-            }
+        stage('Install Dependencies') {
             steps {
-                echo "Deploying ${env.APP_NAME} to ${env.DEPLOY_ENV}"
+                sh '''
+                pip3 install -r requirements.txt || true
+                '''
             }
         }
-    }
 
-    post {
-        success {
-            echo '✅ Pipeline finished successfully'
-        }
-        failure {
-            echo '❌ Pipeline failed'
-        }
-        always {
-            echo 'ℹ️ Post section executed (always)'
+        stage('Test App') {
+            steps {
+                sh '''
+                python3 -m py_compile app.py
+                echo "Flask app syntax OK"
+                '''
+            }
         }
     }
 }
